@@ -42,4 +42,5 @@ metals.sbt
 *.pdf
 *.png
 *.txt
+*.bak
 Makefile

@@ -30,14 +30,24 @@ def getCents: Int =
     cents = getInt
   cents
 
-@main
-def cash: Unit =
-  val cents    = getCents              // Ask how many cents the customer is owed
+/** Calculates the number of coins for change owed.
+  *
+  * @param cents
+  *   The number of cents the customer is owed.
+  * @return
+  *   The minimum number of coins (quarters, dimes, nickels, pennies) to be returned to customer.
+  */
+def getCoins(cents: Int): Int =
   val quarters = cents / 25            // Calculate how many quarters to give the customer
   val change1  = cents - quarters * 25 // Remove quarters
   val dimes    = change1 / 10          // Calculate how many dimes to give the customer
   val change2  = change1 - dimes * 10  // Remove dimes
   val nickels  = change2 / 5           // Calculate how many nickels to give the customer
   val pennies  = change2 - nickels * 5 // Remove nickels, what's left are pennies
-  val coins    = quarters + dimes + nickels + pennies
-  printf(c"%i\n", coins) // total number of coins to give the customer
+  quarters + dimes + nickels + pennies
+
+@main
+def cash: Unit =
+  val cents = getCents        // Ask how many cents the customer is owed
+  val coins = getCoins(cents) // total number of coins to give the customer
+  printf(c"%i\n", coins)
