@@ -12,4 +12,4 @@ jobs:
         fetch-depth: 0
     - uses: coursier/cache-action@v8.1.0
     - uses: VirtusLab/scala-cli-setup@v1.12.5
-    - run: scala-cli compile .
+    - run: scala-cli test .

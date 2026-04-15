@@ -18,7 +18,7 @@ def getInt: Int =
       else break()
   !intPointer
 
-/** Reads input from the user and parses it to a nonnegative integer.
+/** Reads input from the user for the change owed and parses it to a nonnegative integer.
   *
   * @return
   *   The nonnegative integer value inputted by the user.
@@ -26,7 +26,7 @@ def getInt: Int =
 def getCents: Int =
   var cents = -1
   while cents < 0 do
-    printf(c"Number of cents: ")
+    printf(c"Change owed: ")
     cents = getInt
   cents
 
