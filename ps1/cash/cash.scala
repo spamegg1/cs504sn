@@ -46,6 +46,7 @@ def getCoins(cents: Int): Int =
   val pennies  = change2 - nickels * 5 // Remove nickels, what's left are pennies
   quarters + dimes + nickels + pennies
 
+/** Gets input from user for how much change is owed, prints the number of coins. */
 @main
 def cash: Unit =
   val cents = getCents        // Ask how many cents the customer is owed
