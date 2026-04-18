@@ -11,7 +11,8 @@ import java.lang.IllegalArgumentException as IAE
   * @return
   *   The `CString` user typed into `stdin`.
   */
-def getString: CString =
+def getString(message: CString = c""): CString =
+  printf(message)
   val in  = stackalloc[Byte](256)
   val out = malloc(256)
   val _   = fgets(in, 256, stdin)
@@ -30,5 +31,5 @@ def getString: CString =
   */
 @main
 def hello: Unit =
-  printf(c"What is your name?\n")
-  printf(c"hello, %s\n", getString);
+  val name = getString(c"What is your name?\n")
+  printf(c"hello, %s\n", name);

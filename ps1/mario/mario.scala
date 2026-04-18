@@ -8,9 +8,7 @@ import scalanative.libc.stdio.printf
   */
 def getHeight: Int =
   var height = 0
-  while height < 1 || height > 8 do
-    printf(c"Height: ")
-    height = getInt
+  while height < 1 || height > 8 do height = getInt(c"Height: ")
   height
 
 /** Prints a pyramid of given height.

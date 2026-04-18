@@ -1,4 +1,4 @@
-import scalanative.unsafe.{CQuote, stackalloc, Ptr, CInt}
+import scalanative.unsafe.{CQuote, stackalloc, Ptr, CInt, CString}
 import scalanative.libc.stdio.{printf, sscanf, stdin, fgets}
 import scala.util.boundary, boundary.break
 
@@ -8,7 +8,8 @@ import scala.util.boundary, boundary.break
   * @return
   *   The integer value inputted by the user.
   */
-def getInt: Int =
+def getInt(message: CString = c""): Int =
+  printf(message)
   val line: Ptr[Byte]      = stackalloc[Byte](1024)
   val intPointer: Ptr[Int] = stackalloc[Int](1)
   boundary:
@@ -25,9 +26,7 @@ def getInt: Int =
   */
 def getCents: Int =
   var cents = -1
-  while cents < 0 do
-    printf(c"Change owed: ")
-    cents = getInt
+  while cents < 0 do cents = getInt(c"Change owed: ")
   cents
 
 /** Calculates the number of coins for change owed.

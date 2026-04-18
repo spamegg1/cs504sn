@@ -1,4 +1,4 @@
-import scalanative.unsafe.{CQuote, stackalloc, Ptr, CLong}
+import scalanative.unsafe.{CQuote, stackalloc, Ptr, CLong, CString}
 import scalanative.libc.stdio.{printf, sscanf, stdin, fgets}
 import scala.util.boundary, boundary.break
 
@@ -7,7 +7,8 @@ import scala.util.boundary, boundary.break
   * @return
   *   The long value inputted by the user.
   */
-def getLong: Long =
+def getLong(message: CString = c""): Long =
+  printf(message)
   val line: Ptr[Byte]    = stackalloc[Byte](1024)
   val longPtr: Ptr[Long] = stackalloc[Long](1)
   boundary:
@@ -24,9 +25,7 @@ def getLong: Long =
   */
 def getCC: Long =
   var cc = -1L
-  while cc < 0L do
-    printf(c"Number: ")
-    cc = getLong
+  while cc < 0L do cc = getLong(c"Number: ")
   cc
 
 /** Calculates the checksum of a credit card number via Luhn's algorithm.
