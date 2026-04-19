@@ -17,18 +17,18 @@ class ReadabilityTest extends FunSuite:
     toCString(lines)
 
   test("grade and getScore calculate the grade level of various texts correctly"):
-    val path  = os.pwd / "test" / "ps2"
+    val path  = os.pwd / "test" / "ps2" / "readability"
     val files = Seq(
-      "grade0.txt",
-      "grade2.txt",
-      "grade3.txt",
-      "grade5.txt",
-      "grade7.txt",
-      "grade8-1.txt",
-      "grade8-2.txt",
-      "grade9.txt",
-      "grade10.txt",
-      "grade16plus.txt"
+      "grade0",
+      "grade2",
+      "grade3",
+      "grade5",
+      "grade7",
+      "grade8-1",
+      "grade8-2",
+      "grade9",
+      "grade10",
+      "grade16"
     )
     val results = Seq(0, 2, 3, 5, 7, 8, 8, 9, 10, 16)
     Zone:
