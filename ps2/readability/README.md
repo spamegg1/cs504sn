@@ -17,13 +17,6 @@ grade level computed, rounded to the nearest integer. If the grade level is 16 o
 should output “Grade 16+” instead of giving the exact index number. If the grade level
 is less than 1, your program should output “Before Grade 1”.
 
-## Demo
-
-```bash
-$ ./readability
-Text:
-```
-
 ## Background
 
 So what sorts of traits are characteristic of higher reading levels?

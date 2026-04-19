@@ -64,8 +64,6 @@ Usage: ./caesar key
 $ ./caesar 13
 plaintext: Hi there!
 ciphertext: Uv gurer!
-$ ./caesar 26
-plaintext: Th
 ```
 
 ## Specification
