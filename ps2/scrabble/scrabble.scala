@@ -1,11 +1,7 @@
-import scalanative.unsafe.{CQuote, stackalloc, Ptr, CInt, CChar, CString, CDouble}
-import scalanative.unsigned.{UnsignedRichInt, USize}
+import scalanative.unsafe.{CQuote, CInt, CChar, CString}
 import scalanative.libc.stdio.printf
 import scalanative.libc.string.strlen
-import scalanative.libc.ctype.{isalpha, isupper, islower, isspace}
-import scalanative.libc.math.round
-import scalanative.libc.stdlib.{EXIT_SUCCESS, EXIT_FAILURE}
-import scala.util.boundary, boundary.break
+import scalanative.libc.ctype.{isupper, islower}
 
 /** Scrabble letter scores */
 val Points =
