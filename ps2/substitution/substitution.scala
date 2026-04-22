@@ -16,7 +16,11 @@ val Upper = c"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   *   A string of characters.
   */
 def strToLower(key: CString): Unit =
-  for i <- 0 until strlen(key).toInt do key(i) = tolower(key(i)).toByte
+  val len = strlen(key).toInt
+  var i   = 0
+  while i < len do
+    key(i) = tolower(key(i)).toByte
+    i += 1
 
 /** Checks given key for validity. Assumes key is all lowercase.
   *
@@ -30,17 +34,24 @@ def invalid(key: CString): CBool = boundary:
     printf(c"Key must contain 26 characters.\n")
     break(true)
 
-  for i <- 0 until 26 do
+  var i = 0
+  while i < 26 do
     if isalpha(key(i)) == 0 then
       printf(c"Key must contain only alphabetical characters.\n")
       break(true)
+    i += 1
 
-  for i <- 0 until 26 do // check if key contains each lowercase letter exactly once
+  i = 0
+  while i < 26 do // check if key contains each lowercase letter exactly once
     var count = 0
-    for j <- 0 until 26 do if Lower(i) == key(j) then count += 1
+    var j     = 0
+    while j < 26 do
+      if Lower(i) == key(j) then count += 1
+      j += 1
     if count != 1 then
       printf(c"Key must contain each letter exactly once.\n")
       break(true)
+    i += 1
 
   break(false) // passed all checks, key is valid.
 
@@ -56,21 +67,27 @@ def invalid(key: CString): CBool = boundary:
   *   A permutation of the 26-letter alphabet to be used as cipher.
   */
 def substitute(length: CSize, plaintext: CString, ciphertext: CString, key: CString): Unit =
-  for i <- 0 until length.toInt do // Go through the plaintext
+  var i = 0
+  while i < length.toInt do              // Go through the plaintext
     if isalpha(plaintext(i)) != 0 then   // check if the ith char is a letter
       if isupper(plaintext(i)) != 0 then // Now check if it is upper case
         boundary:
-          for k <- 0 until 26 do
+          var k = 0
+          while k < 26 do
             if Upper(k) == plaintext(i) then         // Now find its position in the alphabet
               ciphertext(i) = toupper(key(k)).toByte // replace it by letter in key
               break()
+            k += 1
       if islower(plaintext(i)) != 0 then // Repeat same procedure for lower case
         boundary:
-          for k <- 0 until 26 do
+          var k = 0
+          while k < 26 do
             if Lower(k) == plaintext(i) then         // Now find its position in the alphabet
               ciphertext(i) = tolower(key(k)).toByte // replace it by letter in key
               break()
+            k += 1
     else ciphertext(i) = plaintext(i) // Finally, if it's not a letter, leave it unchanged
+    i += 1
 
 object Substitution:
   def main(args: Array[String]): Unit =

@@ -23,16 +23,18 @@ object Caesar:
     *   An integer from 0 to 25, the alphabet shift value for Caesar cipher.
     */
   def writeCiphertext(plaintext: CString, ciphertext: CString, length: USize, key: Int): Unit =
-    for i <- 0 until length.toInt do
+    var i = 0
+    while i < length.toInt do
       val cchar = plaintext(i)
       if isalpha(cchar) != 0 then
         if isupper(cchar) != 0 then
-          val j = upper.indexWhere(_ == cchar)
-          ciphertext(i) = upper((j + key) % 26).toByte
+          val index = upper.indexWhere(_ == cchar)
+          ciphertext(i) = upper((index + key) % 26).toByte
         if islower(cchar) != 0 then
-          val j = lower.indexWhere(_ == cchar)
-          ciphertext(i) = lower((j + key) % 26).toByte
+          val index = lower.indexWhere(_ == cchar)
+          ciphertext(i) = lower((index + key) % 26).toByte
       else ciphertext(i) = cchar
+      i += 1
     ciphertext(length) = 0.toByte
 
   /** Interactive Caesar cipher. Accepts the shift value (key) as command-line argument, then prompts user to input the

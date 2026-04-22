@@ -20,14 +20,30 @@ def printPyramid(height: Int): Unit =
   var hashes = 1
   var spaces = height - hashes
 
-  for i <- 0 until height do
-    for j <- 0 until spaces do printf(c" ") // left spaces
-    for j <- 0 until hashes do printf(c"#") // left hashes
+  var i = 0
+  while i < height do
+    var j = 0
+    while j < spaces do
+      printf(c" ") // left spaces
+      j += 1
+
+    j = 0
+    while j < hashes do
+      printf(c"#") // left hashes
+      j += 1
+
     printf(c"  ") // the gaps
-    for j <- 0 until hashes do printf(c"#") // right hashes
+
+    j = 0
+    while j < hashes do
+      printf(c"#") // right hashes
+      j += 1
+
     printf(c"\n"); // there are no right spaces, go to next line
+
     hashes += 1
     spaces = height - hashes
+    i += 1
 
 @main
 def mario: Unit = printPyramid(getHeight)

@@ -30,7 +30,10 @@ def letterScore(letter: CChar): CInt =
   */
 def computeScore(word: CString): CInt =
   var score = 0
-  for i <- 0 until strlen(word).toInt do score += letterScore(word(i))
+  var i     = 0
+  while i < strlen(word).toInt do
+    score += letterScore(word(i))
+    i += 1
   score
 
 /** Gets input from two players, and decides winner / loser / tie by calculating their Scrabble scores. */

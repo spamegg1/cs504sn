@@ -26,7 +26,10 @@ type Candidates = Array[Candidate]
   */
 def maxVotes(candidateCount: Int)(using candidates: Candidates): Int =
   var max = 0
-  for i <- 0 until candidateCount do if candidates(i)._2 > max then max = candidates(i)._2
+  var i   = 0
+  while i < candidateCount do
+    if candidates(i)._2 > max then max = candidates(i)._2
+    i += 1
   max
 
 /** Prints the winner of the election.
@@ -38,7 +41,10 @@ def maxVotes(candidateCount: Int)(using candidates: Candidates): Int =
   */
 def printWinner(candidateCount: Int)(using candidates: Candidates): Unit =
   var max = maxVotes(candidateCount)
-  for i <- 0 until candidateCount do if candidates(i)._2 == max then printf(c"%s\n", candidates(i)._1)
+  var i   = 0
+  while i < candidateCount do
+    if candidates(i)._2 == max then printf(c"%s\n", candidates(i)._1)
+    i += 1
 
 /** Updates vote counts for a given vote.
   *
@@ -52,11 +58,12 @@ def printWinner(candidateCount: Int)(using candidates: Candidates): Unit =
   *   true if vote is valid, false otherwise.
   */
 def vote(candidateCount: Int, name: CString)(using candidates: Candidates): CBool = boundary:
-  for i <- 0 until candidateCount do
-    val candidate = candidates(i)
-    if strcmp(name, candidate._1) == 0 then
-      candidate._2 = candidate._2 + 1
+  var i = 0
+  while i < candidateCount do
+    if strcmp(name, candidates(i)._1) == 0 then
+      candidates(i)._2 = candidates(i)._2 + 1
       break(true)
+    i += 1
   false
 
 object Plurality:
@@ -74,17 +81,20 @@ object Plurality:
     given candidates: Candidates = Array.ofDim[Candidate](Max)
 
     Zone:
-      for i <- 0 until candidateCount do // Populate array of candidates
-        // val newCandidate = stackalloc[Candidate](1) // unrecoverable NullPointerException
-        val newCandidate = malloc(sizeof[Candidate]).asInstanceOf[Ptr[Candidate]]
+      var i = 0 // Populate array of candidates
+      while i < candidateCount do
+        val newCandidate = stackalloc[Candidate](1)
         newCandidate._1 = toCString(args(i)) // name
         newCandidate._2 = 0                  // votes
         candidates(i) = newCandidate
+        i += 1
 
       val voterCount = getInt(c"Number of voters: ")
 
-      for i <- 0 until voterCount do // Loop over all voters
+      i = 0
+      while i < voterCount do // Loop over all voters
         val name = getString(c"Vote: ")
         if !vote(candidateCount, name) then printf(c"Invalid vote.\n")
+        i += 1
 
       printWinner(candidateCount)

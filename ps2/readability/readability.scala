@@ -25,7 +25,10 @@ def isperiod(letter: CChar): Boolean = letter == '.' || letter == '?' || letter 
   */
 def countLetters(text: CString): CInt =
   var count = 0
-  for i <- 0 until strlen(text).toInt do if isalpha(text(i)) != 0 then count += 1
+  var i     = 0
+  while i < strlen(text).toInt do
+    if isalpha(text(i)) != 0 then count += 1
+    i += 1
   count
 
 /** Counts the number of words in a given sentence.
@@ -37,7 +40,10 @@ def countLetters(text: CString): CInt =
   */
 def countWords(text: CString): CInt =
   var count = 1
-  for i <- 0 until strlen(text).toInt do if isspace(text(i)) != 0 then count += 1
+  var i     = 0
+  while i < strlen(text).toInt do
+    if isspace(text(i)) != 0 then count += 1
+    i += 1
   count
 
 /** Counts the number of sentences in a given text. Assumes that a sentence will not start or end with a space, and
@@ -50,7 +56,10 @@ def countWords(text: CString): CInt =
   */
 def countSentences(text: CString): CInt =
   var count = 0
-  for i <- 0 until strlen(text).toInt do if isperiod(text(i)) then count += 1
+  var i     = 0
+  while i < strlen(text).toInt do
+    if isperiod(text(i)) then count += 1
+    i += 1
   count
 
 /** Calculates the Coleman-Liau score of the given letter, word, sentence counts.
