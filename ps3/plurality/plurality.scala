@@ -91,10 +91,10 @@ object Plurality:
 
       val voterCount = getInt(c"Number of voters: ")
 
-      i = 0
-      while i < voterCount do // Loop over all voters
+      var j = 0
+      while j < voterCount do // Loop over all voters
         val name = getString(c"Vote: ")
         if !vote(candidateCount, name) then printf(c"Invalid vote.\n")
-        i += 1
+        j += 1
 
       printWinner(candidateCount)

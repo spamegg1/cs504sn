@@ -36,11 +36,16 @@ metals.sbt
 .idea_modules
 /.worksheet/
 
+# scratch
+scratch.scala
+scratch.worksheet.sc
+scratch.sc
+
 # Misc.
 *.c
 *.h
 *.pdf
-*.png
+proof.png
 *.txt
 *.bak
 Makefile
