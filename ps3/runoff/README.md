@@ -47,7 +47,7 @@ In an instant runoff election, voters can rank as many candidates as they wish.
 If any candidate has a majority (more than 50%) of the first preference votes,
 that candidate is declared the winner of the election.
 
-If no candidate has more than 50% of the vote, then an “instant runoff” occurrs.
+If no candidate has more than 50% of the vote, then an “instant runoff” occurs.
 The candidate who received the fewest number of votes is eliminated from the election,
 and anyone who originally chose that candidate as their first preference
 now has their second preference considered. Why do it this way?
@@ -221,15 +221,15 @@ As you write your code, consider these hints:
 
 - Recall that `voter_count` stores the number of voters in the election and that,
   for each voter in our election, we want to count one ballot.
-- Recall that for a voter i, their top choice candidate is represented by
+- Recall that for a voter `i`, their top choice candidate is represented by
   `preferences[i][0]`, their second choice candidate by `preferences[i][1]`, etc.
-- Recall that the candidate struct has a field called eliminated,
+- Recall that the candidate struct has a field called `eliminated`,
   which will be true if the candidate has been eliminated from the election.
-- Recall that the candidate struct has a field called votes,
+- Recall that the candidate struct has a field called `votes`,
   which you’ll likely want to update for each voter’s preferred candidate.
 - Recall that once you’ve cast a vote for a voter’s first non-eliminated candidate,
   you’ll want to stop there, not continue down their ballot.
-  You can break out of a loop early using break inside of a conditional.
+  You can break out of a loop early using `break` inside of a conditional.
 
 ### Complete the `print_winner` function
 

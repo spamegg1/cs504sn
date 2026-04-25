@@ -5,100 +5,181 @@ import scalanative.libc.string.{strlen, strcmp}
 import scalanative.libc.stdlib.{EXIT_SUCCESS, EXIT_FAILURE}
 import scala.util.boundary, boundary.break
 
-// Max voters and candidates
-val MaxVoters     = 100
-val MaxCandidates = 9
+object Runoff:
+  val MaxVoters = 100
+  val MaxCands  = 9
+  // prefs(i)(j): ith voter's jth preferred candidate (Int = candidate number)
+  val prefs = Array.ofDim[Int](MaxVoters, MaxCands)
+  type Cand = CStruct3[CString, CInt, CBool] // name, votes, eliminated?
+  val cands = Array.ofDim[Cand](MaxCands) // array index = candidate number
 
-// preferences(i)(j) is jth preference for voter i
-val preferences = Array.ofDim[Int](MaxVoters, MaxCandidates)
+  /** Records preference if vote is valid.
+    *
+    * @param voter
+    *   The integer identifying the voter.
+    * @param rank
+    *   The ranked preference of the voter for this candidate.
+    * @param name
+    *   The name of the candidate.
+    * @return
+    *   true if vote is valid, false if invalid.
+    */
+  def vote(voter: CInt, rank: CInt, name: CString, candCt: Int): CBool = boundary:
+    var i = 0 // i = candidate number
+    while i < candCt do
+      if strcmp(cands(i)._1, name) == 0 then
+        prefs(voter)(rank) = i
+        break(true)
+      i += 1
+    false
 
-type Candidate = CStruct3[CString, CInt, CBool] // name, votes, eliminated?
-val candidates = Array.ofDim[Candidate](MaxCandidates) // Array of candidates
+  /** Tabulates votes for non-eliminated candidates.
+    *
+    * This means that for each voter, we find that voter's highest non-eliminated candidate and increase that
+    * candidate's vote by 1.
+    */
+  def tabulate(voterCt: Int, candCt: Int): Unit =
+    var i = 0 // i = voter number
+    while i < voterCt do
+      boundary:
+        var j = 0 // j = ranked pref of voter i
+        while j < candCt do
+          val cand = prefs(i)(j)
+          if !cands(cand)._3 then
+            cands(cand)._2 = cands(cand)._2 + 1
+            break()
+          j += 1
+      i += 1
 
-// Numbers of voters and candidates
-var voterCount     = 0
-var candidateCount = 0
+  /** Prints the winner of the election, if there is one.
+    *
+    * @return
+    *   true if there is a winner, false otherwise.
+    */
+  def printWinner(voterCt: Int, candCt: Int): CBool = boundary:
+    var i = 0
+    while i < candCt do
+      if cands(i)._2 > voterCt / 2 then
+        printf(c"%s\n", cands(i)._1)
+        break(true)
+      i += 1
+    false
 
-/** Records preference if vote is valid.
-  *
-  * @param voter
-  *   The integer identifying the voter.
-  * @param rank
-  *   The ranked preference of the voter for this candidate.
-  * @param name
-  *   The name of the candidate.
-  * @return
-  *   true if vote is valid, false if invalid.
-  */
-def vote(voter: CInt, rank: CInt, name: CString): CBool = boundary:
-  var i = 0
-  while i < candidateCount do
-    if strcmp(candidates(i)._1, name) == 0 then
-      preferences(voter)(rank) = i
-      break(true)
-    i += 1
-  false
+  /** Finds the minimum number of votes among cands.
+    *
+    * @return
+    *   The minimum number of votes any remaining candidate has.
+    */
+  def findMin(voterCt: Int, candCt: Int): CInt =
+    var min = voterCt
+    var i   = 0
+    while i < candCt do
+      if !cands(i)._3 && cands(i)._2 < min then min = cands(i)._2
+      i += 1
+    min
 
-// Tabulate votes for non-eliminated candidates
-def tabulate: Unit =
-  var i = 0
-  while i < voterCount do
-    boundary:
+  /** Checks if election is tied between all cands.
+    *
+    * @param min
+    *   The minimum vote count received in this round of voting.
+    * @return
+    *   true if the election is tied between all cands, false otherwise.
+    */
+  def isTie(min: CInt, candCt: Int): CBool = boundary:
+    var i = 0
+    while i < candCt do
+      if !cands(i)._3 && cands(i)._2 != min then break(false)
+      i += 1
+    true
+
+  /** Eliminates the candidate(s) in last place.
+    *
+    * @param min
+    *   The minimum vote count received in this round of voting.
+    */
+  def eliminate(min: CInt, candCt: Int): Unit =
+    var i = 0
+    while i < candCt do
+      if cands(i)._2 == min then cands(i)._3 = true
+      i += 1
+
+  /** Resets vote counts back to zero.
+    *
+    * @param candCt
+    *   Number of candidates.
+    */
+  def resetVotes(candCt: Int) =
+    var i = 0
+    while i < candCt do
+      cands(i)._2 = 0
+      i += 1
+
+  /** Populates array of candidates.
+    *
+    * @param args
+    *   Names of candidates (coming from command-line arguments.)
+    * @param candCt
+    *   Number of candidates.
+    */
+  def populate(args: Array[String], candCt: Int): Unit = Zone:
+    var i = 0
+    while i < candCt do
+      val cand = cands(i)
+      cand._1 = toCString(args(i))
+      cand._2 = 0
+      cand._3 = false
+      i += 1
+
+  /** Runs the runoff election.
+    *
+    * @param args
+    *   Names of the candidates as command line arguments.
+    */
+  def main(args: Array[String]): Unit = boundary:
+    val candCt = args.length
+
+    if candCt < 1 then
+      printf(c"Usage: runoff [candidate ...]\n")
+      break(EXIT_FAILURE)
+
+    if candCt > MaxCands then
+      printf(c"Maximum number of candidates is %i\n", MaxCands)
+      break(EXIT_FAILURE)
+
+    populate(args, candCt)
+
+    val voterCt = getInt(c"Number of voters: ")
+    if voterCt > MaxVoters then
+      printf(c"Maximum number of voters is %i\n", MaxVoters)
+      break(EXIT_FAILURE)
+
+    var i = 0
+    while i < voterCt do // Keep querying for votes
       var j = 0
-      while j < candidateCount do
-        if !candidates(preferences(i)(j))._3 then
-          candidates(preferences(i)(j))._2 = candidates(preferences(i)(j))._2 + 1
-          break()
+      while j < candCt do // Query for each rank
+        printf(c"Rank %i: ", j + 1)
+        val name = getString()
+        if !vote(i, j, name, candCt) then // Record vote, unless it's invalid
+          printf(c"Invalid vote.\n")
+          break(EXIT_FAILURE)
         j += 1
-    i += 1
+      printf(c"\n")
+      i += 1
 
-// Print the winner of the election, if there is one
-def printWinner: CBool = boundary:
-  var i = 0
-  while i < candidateCount do
-    if candidates(i)._2 > voterCount / 2 then
-      printf(c"%s\n", candidates(i)._1)
-      break(true)
-    i += 1
-  return false;
+    boundary:
+      while true do               // Keep holding runoffs until winner exists
+        tabulate(voterCt, candCt) // Calculate votes given remaining candidates
+        val won = printWinner(voterCt, candCt) // Check if election has been won
+        if won then break()
+        val min = findMin(voterCt, candCt) // Eliminate last-place candidates
+        val tie = isTie(min, candCt)
+        if tie then // If tie, everyone wins
+          var i = 0
+          while i < candCt do // print all non-eliminated
+            if !cands(i)._3 then printf(c"%s\n", cands(i)._1)
+            i += 1
+          break()
+        eliminate(min, candCt) // Eliminate anyone with minimum number of votes
+        resetVotes(candCt)
 
-/** Finds the minimum number of votes among candidates.
-  *
-  * @return
-  *   The minimum number of votes any remaining candidate has.
-  */
-def findMin: CInt =
-  var min = voterCount
-  var i   = 0
-  while i < candidateCount do
-    if !candidates(i)._3 && candidates(i)._2 < min then min = candidates(i)._2
-    i += 1
-  min
-
-/** Checks if election is tied between all candidates.
-  *
-  * @param min
-  *   The minimum vote count received in this round of voting.
-  * @return
-  *   true if the election is tied between all candidates, false otherwise.
-  */
-def isTie(min: CInt): CBool = boundary:
-  var i = 0
-  while i < candidateCount do
-    if !candidates(i)._3 && candidates(i)._2 != min then break(false)
-    i += 1
-  true
-
-/** Eliminates the candidate(s) in last place.
-  *
-  * @param min
-  *   The minimum vote count received in this round of voting.
-  */
-def eliminate(min: CInt): Unit =
-  var i = 0
-  while i < candidateCount do
-    if candidates(i)._2 == min then candidates(i)._3 = true
-    i += 1
-
-@main
-def runoff: Unit = ()
+    break(EXIT_SUCCESS)
