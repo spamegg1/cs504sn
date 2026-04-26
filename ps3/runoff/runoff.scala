@@ -1,8 +1,8 @@
 import scalanative.unsafe.*
-import scalanative.unsigned.{UnsignedRichInt, USize}
+import scalanative.unsigned.UnsignedRichInt
 import scalanative.libc.stdio.printf
-import scalanative.libc.string.{strlen, strcmp}
-import scalanative.libc.stdlib.{EXIT_SUCCESS, EXIT_FAILURE}
+import scalanative.libc.string.strcmp
+import scalanative.libc.stdlib.{EXIT_SUCCESS, EXIT_FAILURE, malloc}
 import scala.util.boundary, boundary.break
 
 object Runoff:
@@ -114,21 +114,69 @@ object Runoff:
       cands(i)._2 = 0
       i += 1
 
-  /** Populates array of candidates.
+  /** Populates array of candidates with names (from command line arguments).
     *
     * @param args
-    *   Names of candidates (coming from command-line arguments.)
+    *   Names of candidates (from command-line arguments.)
     * @param candCt
     *   Number of candidates.
     */
-  def populate(args: Array[String], candCt: Int): Unit = Zone:
+  def populate(args: Array[String], candCt: Int)(using Zone): Unit =
     var i = 0
     while i < candCt do
-      val cand = cands(i)
-      cand._1 = toCString(args(i))
-      cand._2 = 0
-      cand._3 = false
+      val newCand = malloc(sizeOf[Cand]).asInstanceOf[Ptr[Cand]]
+      newCand._1 = toCString(args(i))
+      newCand._2 = 0
+      newCand._3 = false
+      cands(i) = newCand
       i += 1
+
+  /** Repeatedly holds runoff elections until there is a winner.
+    *
+    * @param voterCt
+    *   Number of voters.
+    * @param candCt
+    *   Number of candidates.
+    */
+  def repeatRunoff(voterCt: Int, candCt: Int): Unit = boundary:
+    while true do               // Keep holding runoffs until winner exists
+      tabulate(voterCt, candCt) // Calculate votes given remaining candidates
+      val won = printWinner(voterCt, candCt) // Check if election has been won
+      if won then break()
+      val min = findMin(voterCt, candCt) // Eliminate last-place candidates
+      val tie = isTie(min, candCt)
+      if tie then // If tie, everyone wins
+        var i = 0
+        while i < candCt do // print all non-eliminated
+          if !cands(i)._3 then printf(c"%s\n", cands(i)._1)
+          i += 1
+        break()
+      eliminate(min, candCt) // Eliminate anyone with minimum number of votes
+      resetVotes(candCt)
+
+  /** Queries the user for votes.
+    *
+    * @param voterCt
+    *   Number of voters.
+    * @param candCt
+    *   Number of candidates.
+    * @return
+    *   false if there is an invalid vote, true otherwise.
+    */
+  def queryVotes(voterCt: Int, candCt: Int)(using Zone): CBool = boundary:
+    var i = 0
+    while i < voterCt do // Keep querying for votes
+      var j = 0
+      while j < candCt do // Query for each rank
+        printf(c"Rank %i: ", j + 1)
+        val name = getString()
+        if !vote(i, j, name, candCt) then // Record vote, unless it's invalid
+          printf(c"Invalid vote.\n")
+          break(false)
+        j += 1
+      printf(c"\n")
+      i += 1
+    break(true)
 
   /** Runs the runoff election.
     *
@@ -146,40 +194,14 @@ object Runoff:
       printf(c"Maximum number of candidates is %i\n", MaxCands)
       break(EXIT_FAILURE)
 
-    populate(args, candCt)
-
     val voterCt = getInt(c"Number of voters: ")
     if voterCt > MaxVoters then
       printf(c"Maximum number of voters is %i\n", MaxVoters)
       break(EXIT_FAILURE)
 
-    var i = 0
-    while i < voterCt do // Keep querying for votes
-      var j = 0
-      while j < candCt do // Query for each rank
-        printf(c"Rank %i: ", j + 1)
-        val name = getString()
-        if !vote(i, j, name, candCt) then // Record vote, unless it's invalid
-          printf(c"Invalid vote.\n")
-          break(EXIT_FAILURE)
-        j += 1
-      printf(c"\n")
-      i += 1
-
-    boundary:
-      while true do               // Keep holding runoffs until winner exists
-        tabulate(voterCt, candCt) // Calculate votes given remaining candidates
-        val won = printWinner(voterCt, candCt) // Check if election has been won
-        if won then break()
-        val min = findMin(voterCt, candCt) // Eliminate last-place candidates
-        val tie = isTie(min, candCt)
-        if tie then // If tie, everyone wins
-          var i = 0
-          while i < candCt do // print all non-eliminated
-            if !cands(i)._3 then printf(c"%s\n", cands(i)._1)
-            i += 1
-          break()
-        eliminate(min, candCt) // Eliminate anyone with minimum number of votes
-        resetVotes(candCt)
+    Zone:
+      populate(args, candCt)
+      if !queryVotes(voterCt, candCt) then break(EXIT_FAILURE)
+      repeatRunoff(voterCt, candCt)
 
     break(EXIT_SUCCESS)
