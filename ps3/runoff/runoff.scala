@@ -2,7 +2,7 @@ import scalanative.unsafe.*
 import scalanative.unsigned.UnsignedRichInt
 import scalanative.libc.stdio.printf
 import scalanative.libc.string.strcmp
-import scalanative.libc.stdlib.{EXIT_SUCCESS, EXIT_FAILURE, malloc}
+import scalanative.libc.stdlib.{EXIT_SUCCESS, EXIT_FAILURE}
 import scala.util.boundary, boundary.break
 
 object Runoff:
@@ -124,7 +124,7 @@ object Runoff:
   def populate(args: Array[String], candCt: Int)(using Zone): Unit =
     var i = 0
     while i < candCt do
-      val newCand = malloc(sizeOf[Cand]).asInstanceOf[Ptr[Cand]]
+      val newCand = alloc[Cand](1)
       newCand._1 = toCString(args(i))
       newCand._2 = 0
       newCand._3 = false
