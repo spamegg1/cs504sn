@@ -13,8 +13,7 @@ object Plurality:
   // type Cand = CStruct2[CArray[CChar, Twenty], CInt]
 
   val Max = 9 // Max number of cands
-  type Cand  = CStruct2[CString, CInt] // Cands have name and vote count
-  type Cands = Array[Cand]
+  type Cand = CStruct2[CString, CInt] // Cands have name and vote count
   val cands = Array.ofDim[Cand](Max)
 
   /** Finds the maximum number of votes after the election.
@@ -37,9 +36,9 @@ object Plurality:
   /** Prints the winner of the election.
     *
     * @param candCt
-    *   The number of cands.
+    *   The number of candidates.
     * @param cands
-    *   A global mutable array of cands.
+    *   A global mutable array of candidates.
     */
   def printWinner(candCt: Int): Unit =
     var max = maxVotes(candCt)
@@ -51,11 +50,11 @@ object Plurality:
   /** Updates vote counts for a given vote.
     *
     * @param candCt
-    *   The number of cands.
+    *   The number of candidates.
     * @param name
     *   The name of the candidate the vote is for.
     * @param cands
-    *   A global mutable array of cands.
+    *   A global mutable array of candidates.
     * @return
     *   true if vote is valid, false otherwise.
     */
@@ -91,7 +90,7 @@ object Plurality:
     * @param candCt
     *   Number of candidates.
     */
-  def getVotes(voterCt: Int, candCt: Int)(using Zone): Unit =
+  def getVotes(voterCt: Int, candCt: Int): Unit =
     var j = 0
     while j < voterCt do // Loop over all voters
       val name = getString(c"Vote: ")

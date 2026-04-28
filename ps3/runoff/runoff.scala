@@ -108,7 +108,7 @@ object Runoff:
     * @param candCt
     *   Number of candidates.
     */
-  def resetVotes(candCt: Int) =
+  def resetVotes(candCt: Int): Unit =
     var i = 0
     while i < candCt do
       cands(i)._2 = 0
@@ -141,17 +141,17 @@ object Runoff:
   def repeatRunoff(voterCt: Int, candCt: Int): Unit = boundary:
     while true do               // Keep holding runoffs until winner exists
       tabulate(voterCt, candCt) // Calculate votes given remaining candidates
-      val won = printWinner(voterCt, candCt) // Check if election has been won
+      val won = printWinner(voterCt, candCt)
       if won then break()
-      val min = findMin(voterCt, candCt) // Eliminate last-place candidates
+      val min = findMin(voterCt, candCt)
       val tie = isTie(min, candCt)
-      if tie then // If tie, everyone wins
+      if tie then // If tie, everyone wins. print all non-eliminated winners
         var i = 0
-        while i < candCt do // print all non-eliminated
+        while i < candCt do
           if !cands(i)._3 then printf(c"%s\n", cands(i)._1)
           i += 1
         break()
-      eliminate(min, candCt) // Eliminate anyone with minimum number of votes
+      eliminate(min, candCt)
       resetVotes(candCt)
 
   /** Queries the user for votes.
@@ -165,18 +165,20 @@ object Runoff:
     */
   def queryVotes(voterCt: Int, candCt: Int)(using Zone): CBool = boundary:
     var i = 0
-    while i < voterCt do // Keep querying for votes
+    while i < voterCt do // Query each voter
       var j = 0
       while j < candCt do // Query for each rank
         printf(c"Rank %i: ", j + 1)
         val name = getString()
         if !vote(i, j, name, candCt) then // Record vote, unless it's invalid
           printf(c"Invalid vote.\n")
-          break(false)
+          break(false) // breaks out of both while loops
         j += 1
+      end while
       printf(c"\n")
       i += 1
-    break(true)
+    end while
+    true // all votes are valid
 
   /** Runs the runoff election.
     *
@@ -204,4 +206,4 @@ object Runoff:
       if !queryVotes(voterCt, candCt) then break(EXIT_FAILURE)
       repeatRunoff(voterCt, candCt)
 
-    break(EXIT_SUCCESS)
+    EXIT_SUCCESS
