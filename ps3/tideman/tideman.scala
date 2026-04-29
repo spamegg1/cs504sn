@@ -30,14 +30,13 @@ object Tideman:
     * @return
     *   true if vote is valid (candidate exists), false if invalid (candidate does not exist).
     */
-  def vote(candCt: Int, rank: CInt, name: CString, ranks: Array[CInt]): CBool =
+  def vote(candCt: Int, rank: CInt, name: CString, ranks: Array[CInt]): CBool = boundary:
     var i = 0
-    boundary:
-      while i < candCt do
-        if strcmp(name, cands(i)) == 0 then
-          ranks(rank) = i
-          break(true)
-        i += 1
+    while i < candCt do
+      if strcmp(name, cands(i)) == 0 then
+        ranks(rank) = i
+        break(true)
+      i += 1
     false
 
   /** Records the ranked preferences of a voter.
@@ -57,7 +56,7 @@ object Tideman:
         j += 1
       i += 1
 
-  /** Records pairs of candidates to the preferences matrix.
+  /** Records pairs of candidates to the pairs array based on the preferences matrix.
     *
     * @param candCt
     *   Number of candidates.
@@ -77,8 +76,8 @@ object Tideman:
           pairs(pairCt) = newPair
           pairCt += 1
         if prefIJ < prefJI then
-          newPair._1 = j
-          newPair._2 = i
+          newPair._1 = j // winner
+          newPair._2 = i // loser
           pairs(pairCt) = newPair
           pairCt += 1
         j += 1
@@ -191,10 +190,10 @@ object Tideman:
     *   true if all votes are valid, false if there is at least one invalid vote.
     */
   def queryVotes(voterCt: Int, candCt: Int)(using Zone): CBool = boundary:
-    var i = 0
+    val ranks = Array.ofDim[CInt](candCt) // ranks(i) is voter's ith preference
+    var i     = 0
     while i < voterCt do // Query for votes
-      val ranks = Array.ofDim[CInt](candCt) // ranks(i) is voter's ith preference
-      var j     = 0
+      var j = 0
       while j < candCt do // Query for each rank
         printf(c"Rank %i: ", j + 1)
         val name = getString()

@@ -1,6 +1,4 @@
 import scalanative.unsafe.*
-// import scalanative.unsigned.UnsignedRichInt
-// import scalanative.libc.string.strlen
 import munit.FunSuite
 
 class TidemanTest extends FunSuite:
@@ -81,4 +79,36 @@ class TidemanTest extends FunSuite:
     assertEquals(prefs(2)(1), 4)
     assertEquals(prefs(2)(2), 0)
 
-    assert(true)
+    Zone:
+      addPairs(candCt)
+      assertEquals(pairCt, 3)
+
+      sortPairs
+      // Now pairs should be:
+      // (0,1) because Alice=0 beats Bob=1 by 7-2
+      // (2,0) because Charlie=2 beats Alice=0 by 6-3
+      // (1,2) because Bob=1 beats Charlie=2 by 5-4
+      assertEquals(pairs(0)._1, 0)
+      assertEquals(pairs(0)._2, 1)
+      assertEquals(pairs(1)._1, 2)
+      assertEquals(pairs(1)._2, 0)
+      assertEquals(pairs(2)._1, 1)
+      assertEquals(pairs(2)._2, 2)
+
+      lockPairs(candCt)
+      // Now locked array should be:
+      //   |0|1|2|
+      // |0|F|T|F|
+      // |1|F|F|F|
+      // |2|T|F|F|
+      assert(!locked(0)(0))
+      assert(locked(0)(1))
+      assert(!locked(0)(2))
+      assert(!locked(1)(0))
+      assert(!locked(1)(1))
+      assert(!locked(1)(2))
+      assert(locked(2)(0))
+      assert(!locked(2)(1))
+      assert(!locked(2)(2))
+
+      printWinner(candCt) // Should print Charlie
