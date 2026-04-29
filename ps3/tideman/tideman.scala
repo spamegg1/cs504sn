@@ -37,9 +37,10 @@ object Tideman:
         if strcmp(name, cands(i)) == 0 then
           ranks(rank) = i
           break(true)
+        i += 1
     false
 
-  /** Records the preferences of the given ranks.
+  /** Records the ranked preferences of a voter.
     *
     * @param candCt
     *   Number of candidates.
@@ -54,8 +55,9 @@ object Tideman:
       while j < candCt do
         prefs(ranks(i))(ranks(j)) += 1
         j += 1
+      i += 1
 
-  /** Records pairs of candidates where one is preferred over the other.
+  /** Records pairs of candidates to the preferences matrix.
     *
     * @param candCt
     *   Number of candidates.
