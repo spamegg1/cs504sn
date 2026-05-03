@@ -1,7 +1,7 @@
 import scalanative.unsafe.*
 import scalanative.unsigned.*
 import scalanative.libc.stdio.printf
-import scalanative.libc.math.round
+import scalanative.libc.math.{round, sqrt}
 import scalanative.libc.stdlib.{EXIT_SUCCESS, EXIT_FAILURE}
 import scala.util.boundary, boundary.break
 
@@ -17,7 +17,36 @@ object FilterHelpers:
     */
   def avg(values: Seq[Byte8]): Byte8 =
     val double = values.foldLeft(0.toUInt)(_ + _).toDouble / values.size
-    round(double).toByte.toUByte
+    round(double).toByte.toUByte // .toByte should be safe since avg of 0-255 is 0-255
+
+  /** Applies the Sobel operator to a 3x3 input matrix.
+    *
+    * @param a
+    *   A color value 0-255.
+    * @param b
+    *   A color value 0-255.
+    * @param c
+    *   A color value 0-255.
+    * @param d
+    *   A color value 0-255.
+    * @param e
+    *   A color value 0-255.
+    * @param f
+    *   A color value 0-255.
+    * @param g
+    *   A color value 0-255.
+    * @param h
+    *   A color value 0-255.
+    * @param i
+    *   A color value 0-255.
+    * @return
+    *   The Sobel filter applied to the given values.
+    */
+  def sobel(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int, g: Int, h: Int, i: Int): Byte8 =
+    val gx  = c + f + f + i - a - d - d - g
+    val gy  = g + h + h + i - a - b - b - c
+    val res = round(sqrt((gx * gx + gy * gy).toDouble))
+    if res > 255 then 255.toUByte else res.toByte.toUByte
 
   /** Copies the image of given height and width by allocating on the heap.
     *
@@ -41,6 +70,56 @@ object FilterHelpers:
         imgCopy(index)._1 = image(index)._1
         imgCopy(index)._2 = image(index)._2
         imgCopy(index)._3 = image(index)._3
+        col += 1
+      row += 1
+    imgCopy
+
+  /** Creates a copy of the image with black pixels added around the 4 edges. The resulting image is 2 pixels larger in
+    * both height and width.
+    *
+    * @param height
+    *   Height of the image in pixels.
+    * @param width
+    *   Width of the image in pixels.
+    * @param image
+    *   The array of pixels holding the RGB values.
+    * @return
+    *   Pointer to the new copy of the image.
+    */
+  def copyBlack(height: Int, width: Int, image: Bitmap)(using Zone): Bitmap =
+    val Black = alloc[RgbTriple](1)
+    Black._1 = 0.toUByte
+    Black._2 = 0.toUByte
+    Black._3 = 0.toUByte
+
+    val imgCopy = alloc[RgbTriple]((height + 2) * (width + 2))
+
+    var col    = 0
+    val bottom = (height + 1) * width
+    while col < width + 2 do
+      imgCopy(col) = Black          // top edge all black
+      imgCopy(bottom + col) = Black // bottom edge all black
+      col += 1
+
+    var row = 0
+    while row < height + 2 do
+      val left  = row * (width + 2)
+      val right = left + width + 1
+      imgCopy(left) = Black  // left edge all black
+      imgCopy(right) = Black // right edge all black
+      row += 1
+
+    row = 0
+    col = 0
+    while row < height do // insides of the black edges are the same as image
+      val origRows = row * width
+      val copyRows = (row + 1) * (width + 2)
+      while col < width do
+        val origIndex = origRows + col
+        val copyIndex = copyRows + 1 + col
+        imgCopy(copyIndex)._1 = image(origIndex)._1
+        imgCopy(copyIndex)._2 = image(origIndex)._2
+        imgCopy(copyIndex)._3 = image(origIndex)._3
         col += 1
       row += 1
     imgCopy
@@ -101,11 +180,15 @@ object FilterHelpers:
     *   The array holding the RGB values.
     */
   def edges(height: Int, width: Int, image: Bitmap)(using Zone): Unit =
-    val Black = alloc[RgbTriple](1)
-    Black._1 = 0.toUByte
-    Black._2 = 0.toUByte
-    Black._3 = 0.toUByte
-    ???
+    val imgCopy = copyBlack(height, width, image) // h+2 x w+2 copy with black edges
+
+    var row = 0
+    while row < height + 2 do
+      var col = 0
+      while col < width + 2 do
+        val x = 0
+        col += 1
+      row += 1
 
   /** Calculates the list of indices of all pixels around a given row,col position, including the position itself. There
     * can be as few as 4 (the corners) and as many as 9 (in the middle, away from all edges).
