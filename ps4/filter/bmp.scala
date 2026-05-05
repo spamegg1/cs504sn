@@ -1,5 +1,5 @@
-import scalanative.unsafe.{CStruct3, CStruct5, CStruct11, Ptr}
-import scalanative.unsigned.UByte
+import scalanative.unsafe.*
+import scalanative.unsigned.*
 import scalanative.libc.stdint.{uint16_t, uint32_t, int32_t}
 
 object Bmp:
@@ -54,4 +54,4 @@ object Bmp:
   type RgbTriple = CStruct3[Byte8, Byte8, Byte8] // blue, green, red
 
   /** Convenient shorthand for a rectangle of RGB values. */
-  type Bitmap = Ptr[RgbTriple]
+  type Pixels = Ptr[RgbTriple]
