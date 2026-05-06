@@ -3,4 +3,4 @@
 //> using platform native
 //> using nativeVersion 0.5.11
 //> using options -explain-cyclic -Ydebug-cyclic
-//> using nativeCompile -Qunused-arguments -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wshadow
+// //> using nativeCompile -Qunused-arguments -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wshadow

@@ -1,6 +1,6 @@
 import scalanative.unsafe.*
 import scalanative.unsigned.*
-import scalanative.libc.stdio.{printf, fread, fwrite, fclose, fopen, fseek}
+import scalanative.libc.stdio.*
 import scalanative.libc.stdlib.{EXIT_SUCCESS, EXIT_FAILURE}
 import scalanative.libc.math.abs
 import scalanative.posix.unistd.{getopt, optind}
@@ -31,13 +31,13 @@ object Filter:
       val (argc, argv) = convertCliArgs(args) // CLI args in C format
       val filters      = c"begr"              // Define allowable filters
 
-      var filter = getopt(argc, argv, filters)
+      val filter = getopt(argc, argv, filters)
       if filter == '?' then // Get filter flag and check validity
         printf(c"Invalid filter.\n")
         break(EXIT_FAILURE)
 
-      filter = getopt(argc, argv, filters)
-      if filter != -1 then // Ensure only one filter
+      val filter2 = getopt(argc, argv, filters)
+      if filter2 != -1 then // Ensure only one filter
         printf(c"Only one filter allowed.\n")
         break(EXIT_FAILURE)
 
@@ -81,7 +81,9 @@ object Filter:
 
       // Get image's dimensions
       val height = abs(infoHeader._3) // biHeight
-      val width  = infoHeader._2      // biWidth
+      val width  = abs(infoHeader._2) // biWidth
+      printf(c"height: %d\n", height)
+      printf(c"width: %d\n", width)
 
       // Allocate memory for image
       val pixels = alloc[RgbTriple](height * width)
@@ -95,15 +97,11 @@ object Filter:
       // Determine padding for scanlines
       val padding = (4 - (width * sizeof[RgbTriple].toInt) % 4) % 4
 
-      // // Iterate over infile's scanlines
-      // for (int i = 0; i < height; i++)
-      // {
-      //   // Read row into pixel array
-      //   fread(image[i], sizeof(RGBTRIPLE), width, inptr);
-
-      //   // Skip over padding
-      //   fseek(inptr, padding, SEEK_CUR);
-      // }
+      var row = 0 // Iterate over infile's scanlines, read rows into pixels
+      while row < height do
+        fread(pixels, sizeof[RgbTriple], width.toCSize, inptr)
+        fseek(inptr, padding, SEEK_CUR) // Skip over padding
+        row += 1
 
       filter match // Filter image
         case 'b' => bmp.blur
@@ -117,18 +115,14 @@ object Filter:
       // Write outfile's BITMAPINFOHEADER
       fwrite(infoHeader, sizeof[BitmapInfoHeader], 1.toCSize, outptr)
 
-      // // Write new pixels to outfile
-      // for (int i = 0; i < height; i++)
-      // {
-      //   // Write row to outfile
-      //   fwrite(image[i], sizeof(RGBTRIPLE), width, outptr);
-
-      //   // Write padding at end of row
-      //   for (int k = 0; k < padding; k++)
-      //   {
-      //     fputc(0x00, outptr);
-      //   }
-      // }
+      row = 0               // Write new pixels to outfile
+      while row < height do // Write row to outfile
+        fwrite(pixels, sizeof[RgbTriple], width.toCSize, outptr)
+        var pad = 0 // Write padding at end of row
+        while pad < padding do
+          fputc(0x00, outptr)
+          pad += 1
+        row += 1
 
       fclose(inptr) // Close files and return
       fclose(outptr)
