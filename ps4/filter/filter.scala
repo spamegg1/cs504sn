@@ -1,10 +1,11 @@
 import scalanative.unsafe.*
 import scalanative.unsigned.*
 import scalanative.libc.stdio.*
-import scalanative.libc.stdlib.{EXIT_SUCCESS, EXIT_FAILURE}
+import scalanative.libc.stdlib.{malloc, free, EXIT_SUCCESS, EXIT_FAILURE}
 import scalanative.libc.math.abs
 import scalanative.posix.unistd.{getopt, optind}
 import scala.util.boundary, boundary.break
+import Bmp.BitmapFileHeader
 
 object Filter:
   import Bmp.*
@@ -28,6 +29,9 @@ object Filter:
 
   def main(args: Array[String]): Unit = boundary:
     Zone:
+      import BitmapFileHeader.{bfType, bfOffBits}
+      import BitmapInfoHeader.{biSize, biBitCount, biCompression, biHeight, biWidth}
+
       val (argc, argv) = convertCliArgs(args) // CLI args in C format
       val filters      = c"begr"              // Define allowable filters
 
@@ -59,19 +63,19 @@ object Filter:
         printf(c"Could not create %s.\n", outfile)
         break(EXIT_FAILURE)
 
-      val fileHeader = alloc[BitmapFileHeader](1) // Read infile's BITMAPFILEHEADER
-      fread(fileHeader, sizeof[BitmapFileHeader], 1.toCSize, inptr)
+      val fileHeader = BitmapFileHeader.alloc // Read infile's BITMAPFILEHEADER
+      fread(fileHeader, BitmapFileHeader.size, 1.toCSize, inptr)
 
-      val infoHeader = alloc[BitmapInfoHeader](1) // Read infile's BITMAPINFOHEADER
-      fread(infoHeader, sizeof[BitmapInfoHeader], 1.toCSize, inptr)
+      val infoHeader = BitmapInfoHeader.alloc // Read infile's BITMAPINFOHEADER
+      fread(infoHeader, BitmapInfoHeader.size, 1.toCSize, inptr)
 
       // Ensure infile is (likely) a 24-bit uncompressed BMP 4.0
       if (
-          fileHeader._1 != 0x4d42 || // bfType
-          fileHeader._5 != 54 ||     // bfOffBits
-          infoHeader._1 != 40 ||     // biSize
-          infoHeader._5 != 24 ||     // biBitCount
-          infoHeader._6 != 0         // biCompression
+          !fileHeader.bfType != 0x4d42 ||
+          !fileHeader.bfOffBits != 54 ||
+          !infoHeader.biSize != 40 ||
+          !infoHeader.biBitCount != 24 ||
+          !infoHeader.biCompression != 0
         )
       then
         fclose(outptr)
@@ -80,8 +84,8 @@ object Filter:
         break(EXIT_FAILURE)
 
       // Get image's dimensions
-      val height = abs(infoHeader._3) // biHeight
-      val width  = abs(infoHeader._2) // biWidth
+      val height = abs(!infoHeader.biHeight)
+      val width  = abs(!infoHeader.biWidth)
       printf(c"height: %d\n", height)
       printf(c"width: %d\n", width)
 
@@ -110,10 +114,10 @@ object Filter:
         case 'r' => bmp.reflect
 
       // Write outfile's BITMAPFILEHEADER
-      fwrite(fileHeader, sizeof[BitmapFileHeader], 1.toCSize, outptr)
+      fwrite(fileHeader, BitmapFileHeader.size, 1.toCSize, outptr)
 
       // Write outfile's BITMAPINFOHEADER
-      fwrite(infoHeader, sizeof[BitmapInfoHeader], 1.toCSize, outptr)
+      fwrite(infoHeader, BitmapInfoHeader.size, 1.toCSize, outptr)
 
       row = 0               // Write new pixels to outfile
       while row < height do // Write row to outfile
@@ -124,6 +128,8 @@ object Filter:
           pad += 1
         row += 1
 
-      fclose(inptr) // Close files and return
+      fclose(inptr) // Close files, free memory and return
       fclose(outptr)
+      free(fileHeader)
+      free(infoHeader)
       EXIT_SUCCESS
