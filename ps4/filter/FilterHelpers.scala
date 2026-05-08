@@ -48,9 +48,9 @@ object FilterHelpers:
     *   List of indices of the pixel's surrounding neighbors.
     */
   def clamp(row: Int, col: Int, width: Int, height: Int): Seq[Int] =
-    val prevRow = row * (width - 1)
+    val prevRow = (row - 1) * width
     val thisRow = row * width
-    val nextRow = row * (width + 1)
+    val nextRow = (row + 1) * width
     val i       = thisRow + col
     val p       = prevRow + col
     val n       = nextRow + col

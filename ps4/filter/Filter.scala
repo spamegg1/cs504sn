@@ -68,19 +68,13 @@ object Filter:
       val infoHeader = BitmapInfoHeader.alloc // Read infile's BITMAPINFOHEADER
       fread(infoHeader, BitmapInfoHeader.size, 1.toCSize, inptr)
 
-      // printf(c"%d\n", !fileHeader.bfType)
-      // printf(c"%d\n", !fileHeader.bfOffBits)
-      // printf(c"%d\n", !infoHeader.biSize)
-      // printf(c"%d\n", !infoHeader.biBitCount)
-      // printf(c"%d\n", !infoHeader.biCompression)
-
       // Ensure infile is (likely) a 24-bit uncompressed BMP 4.0
       if (
-          !fileHeader.bfType != 0x4d42 || // correct, 19778
-          !fileHeader.bfOffBits != 54 ||  // wrong, 0
-          !infoHeader.biSize != 40 ||     // correct, 40
-          !infoHeader.biBitCount != 24 || // wrong, 8731
-          !infoHeader.biCompression != 0  // correct, 0
+          !fileHeader.bfType != 0x4d42 ||
+          !fileHeader.bfOffBits != 54 ||
+          !infoHeader.biSize != 40 ||
+          !infoHeader.biBitCount != 24 ||
+          !infoHeader.biCompression != 0
         )
       then
         fclose(outptr)
@@ -93,8 +87,6 @@ object Filter:
       // Get image's dimensions
       val height = abs(!infoHeader.biHeight)
       val width  = abs(!infoHeader.biWidth)
-      printf(c"height: %d\n", height)
-      printf(c"width: %d\n", width)
 
       // Allocate memory for image
       val pixels = alloc[RgbTriple](height * width)
@@ -110,7 +102,7 @@ object Filter:
 
       var row = 0 // Iterate over infile's scanlines, read rows into pixels
       while row < height do
-        fread(pixels, sizeof[RgbTriple], width.toCSize, inptr)
+        fread(pixels + row * width, sizeof[RgbTriple], width.toCSize, inptr)
         fseek(inptr, padding, SEEK_CUR) // Skip over padding
         row += 1
 
@@ -128,7 +120,7 @@ object Filter:
 
       row = 0               // Write new pixels to outfile
       while row < height do // Write row to outfile
-        fwrite(pixels, sizeof[RgbTriple], width.toCSize, outptr)
+        fwrite(pixels + row * width, sizeof[RgbTriple], width.toCSize, outptr)
         var pad = 0 // Write padding at end of row
         while pad < padding do
           fputc(0x00, outptr)

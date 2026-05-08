@@ -128,12 +128,13 @@ case class Bitmap(height: Int, width: Int, pixels: Pixels):
     newCopy
 
   /** Reflects the image (in place) horizontally. */
-  def reflect: Unit =
-    var row = 0
+  def reflect(using Zone): Unit =
+    val temp = alloc[RgbTriple](1)
+    var row  = 0
     while row < height do
       var col = 0
       while col < width / 2 do
-        val temp = at(row)(col)
+        temp.set(at(row)(col))
         update(row)(col)(at(row)(width - 1 - col))
         update(row)(width - 1 - col)(temp)
         col += 1

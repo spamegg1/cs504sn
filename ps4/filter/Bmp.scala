@@ -77,6 +77,11 @@ object Bmp:
     * Adapted from http://msdn.microsoft.com/en-us/library/aa922590.aspx.
     */
   type RgbTriple = CStruct3[Byte8, Byte8, Byte8] // blue, green, red
+  extension (rgb: RgbTriple)
+    def set(that: RgbTriple): Unit =
+      rgb._1 = that._1
+      rgb._2 = that._2
+      rgb._3 = that._3
 
   /** Convenient shorthand for a rectangle of RGB values. */
   type Pixels = Ptr[RgbTriple]
