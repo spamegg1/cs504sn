@@ -23,17 +23,16 @@ object Bmp:
     */
   type BitmapFileHeader = Ptr[Byte]
   object BitmapFileHeader:
-    private val offset0 = 0
     private val offset1 = sizeof[Word]
     private val offset2 = offset1 + sizeof[DWord]
     private val offset3 = offset2 + sizeof[Word]
     private val offset4 = offset3 + sizeof[Word]
 
     val size  = offset4 + sizeof[DWord]
-    def alloc = malloc(size).asInstanceOf[Ptr[BitmapFileHeader]]
+    def alloc = malloc(size).asInstanceOf[BitmapFileHeader]
 
-    extension (bmpFh: Ptr[BitmapFileHeader])
-      def bfType      = (bmpFh + offset0).asInstanceOf[Ptr[Word]]
+    extension (bmpFh: BitmapFileHeader)
+      def bfType      = bmpFh.asInstanceOf[Ptr[Word]]
       def bfSize      = (bmpFh + offset1).asInstanceOf[Ptr[DWord]]
       def bfReserved1 = (bmpFh + offset2).asInstanceOf[Ptr[Word]]
       def bfReserved2 = (bmpFh + offset3).asInstanceOf[Ptr[Word]]
@@ -46,7 +45,6 @@ object Bmp:
     */
   type BitmapInfoHeader = Ptr[Byte]
   object BitmapInfoHeader:
-    private val offset0  = 0
     private val offset1  = sizeof[DWord]
     private val offset2  = offset1 + sizeof[Long32]
     private val offset3  = offset2 + sizeof[Long32]
@@ -59,10 +57,10 @@ object Bmp:
     private val offset10 = offset9 + sizeof[DWord]
 
     val size  = offset10 + sizeof[DWord]
-    def alloc = malloc(size).asInstanceOf[Ptr[BitmapInfoHeader]]
+    def alloc = malloc(size).asInstanceOf[BitmapInfoHeader]
 
-    extension (bmpIh: Ptr[BitmapInfoHeader])
-      def biSize          = (bmpIh + offset0).asInstanceOf[Ptr[DWord]]
+    extension (bmpIh: BitmapInfoHeader)
+      def biSize          = bmpIh.asInstanceOf[Ptr[DWord]]
       def biWidth         = (bmpIh + offset1).asInstanceOf[Ptr[Long32]]
       def biHeight        = (bmpIh + offset2).asInstanceOf[Ptr[Long32]]
       def biPlanes        = (bmpIh + offset3).asInstanceOf[Ptr[Word]]

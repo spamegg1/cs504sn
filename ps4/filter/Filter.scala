@@ -5,7 +5,6 @@ import scalanative.libc.stdlib.{malloc, free, EXIT_SUCCESS, EXIT_FAILURE}
 import scalanative.libc.math.abs
 import scalanative.posix.unistd.{getopt, optind}
 import scala.util.boundary, boundary.break
-import Bmp.BitmapFileHeader
 
 object Filter:
   import Bmp.*
@@ -69,17 +68,25 @@ object Filter:
       val infoHeader = BitmapInfoHeader.alloc // Read infile's BITMAPINFOHEADER
       fread(infoHeader, BitmapInfoHeader.size, 1.toCSize, inptr)
 
+      // printf(c"%d\n", !fileHeader.bfType)
+      // printf(c"%d\n", !fileHeader.bfOffBits)
+      // printf(c"%d\n", !infoHeader.biSize)
+      // printf(c"%d\n", !infoHeader.biBitCount)
+      // printf(c"%d\n", !infoHeader.biCompression)
+
       // Ensure infile is (likely) a 24-bit uncompressed BMP 4.0
       if (
-          !fileHeader.bfType != 0x4d42 ||
-          !fileHeader.bfOffBits != 54 ||
-          !infoHeader.biSize != 40 ||
-          !infoHeader.biBitCount != 24 ||
-          !infoHeader.biCompression != 0
+          !fileHeader.bfType != 0x4d42 || // correct, 19778
+          !fileHeader.bfOffBits != 54 ||  // wrong, 0
+          !infoHeader.biSize != 40 ||     // correct, 40
+          !infoHeader.biBitCount != 24 || // wrong, 8731
+          !infoHeader.biCompression != 0  // correct, 0
         )
       then
         fclose(outptr)
         fclose(inptr)
+        free(fileHeader)
+        free(infoHeader)
         printf(c"Unsupported file format.\n")
         break(EXIT_FAILURE)
 
