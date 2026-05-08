@@ -1,9 +1,6 @@
 import scalanative.unsafe.*
 import scalanative.unsigned.*
-import scalanative.libc.stdio.printf
 import scalanative.libc.math.{round, sqrt}
-import scalanative.libc.stdlib.{EXIT_SUCCESS, EXIT_FAILURE}
-import scala.util.boundary, boundary.break
 
 object FilterHelpers:
   import Bmp.*
@@ -66,3 +63,24 @@ object FilterHelpers:
     if col == 0 then Seq(i, i + 1, p, p + 1, n, n + 1)              // mid left
     else if col == width - 1 then Seq(i, i - 1, p, p - 1, n, n - 1) // mid right
     else Seq(i, i - 1, i + 1, p - 1, p, p + 1, n - 1, n, n + 1)     // mid mid
+
+  /** Produces the 9 coordinate pairs surrounding a given pixel's coordinates.
+    *
+    * @param row
+    *   Row of the pixel.
+    * @param col
+    *   Column of the pixel.
+    * @return
+    *   `(row, col)` pairs of the 9 cells around the pixel, including the pixel itself.
+    */
+  def neighbors(row: Int)(col: Int) = Seq(
+    (row - 1, col - 1),
+    (row - 1, col),
+    (row - 1, col + 1),
+    (row, col - 1),
+    (row, col),
+    (row, col + 1),
+    (row + 1, col - 1),
+    (row + 1, col),
+    (row + 1, col + 1)
+  )

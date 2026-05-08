@@ -26,10 +26,15 @@ object Filter:
       i += 1
     (argc, argv)
 
+  /** Runs the filter program.
+    *
+    * @param args
+    *   Command-line arguments (Scala style): -option infile outfile.
+    */
   def main(args: Array[String]): Unit = boundary:
     Zone:
-      import BitmapFileHeader.{bfType, bfOffBits}
-      import BitmapInfoHeader.{biSize, biBitCount, biCompression, biHeight, biWidth}
+      import BitmapFileHeader.{bfType, bfReserved1, bfReserved2, bfOffBits}
+      import BitmapInfoHeader.{biSize, biBitCount, biCompression, biHeight, biWidth, biPlanes}
 
       val (argc, argv) = convertCliArgs(args) // CLI args in C format
       val filters      = c"begr"              // Define allowable filters
@@ -71,8 +76,11 @@ object Filter:
       // Ensure infile is (likely) a 24-bit uncompressed BMP 4.0
       if (
           !fileHeader.bfType != 0x4d42 ||
+          !fileHeader.bfReserved1 != 0 ||
+          !fileHeader.bfReserved2 != 0 ||
           !fileHeader.bfOffBits != 54 ||
           !infoHeader.biSize != 40 ||
+          !infoHeader.biPlanes != 1 ||
           !infoHeader.biBitCount != 24 ||
           !infoHeader.biCompression != 0
         )
@@ -111,6 +119,7 @@ object Filter:
         case 'e' => bmp.edges
         case 'g' => bmp.grayscale
         case 'r' => bmp.reflect
+        case -1  => printf(c"No filter specified.\n")
 
       // Write outfile's BITMAPFILEHEADER
       fwrite(fileHeader, BitmapFileHeader.size, 1.toCSize, outptr)

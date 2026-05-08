@@ -22,15 +22,25 @@ object Bmp:
     * Adapted from http://msdn.microsoft.com/en-us/library/dd183374(VS.85).aspx.
     */
   type BitmapFileHeader = Ptr[Byte]
+
+  /** Contains field getters and some convenience methods for the custom struct `BitmapFileHeader`. */
   object BitmapFileHeader:
     private val offset1 = sizeof[Word]
     private val offset2 = offset1 + sizeof[DWord]
     private val offset3 = offset2 + sizeof[Word]
     private val offset4 = offset3 + sizeof[Word]
 
-    val size  = offset4 + sizeof[DWord]
+    /** Total size of a `BitmapFileHeader`. */
+    val size = offset4 + sizeof[DWord]
+
+    /** Allocates memory on the heap for 1 file header struct. Has to be freed manually.
+      *
+      * @return
+      *   Pointer to the file header struct allocated (or `null` if failed).
+      */
     def alloc = malloc(size).asInstanceOf[BitmapFileHeader]
 
+    /** Field getters (using pointer arithmetic and casts). */
     extension (bmpFh: BitmapFileHeader)
       def bfType      = bmpFh.asInstanceOf[Ptr[Word]]
       def bfSize      = (bmpFh + offset1).asInstanceOf[Ptr[DWord]]
@@ -44,6 +54,8 @@ object Bmp:
     * Adapted from http://msdn.microsoft.com/en-us/library/dd183376(VS.85).aspx.
     */
   type BitmapInfoHeader = Ptr[Byte]
+
+  /** Contains field getters and some convenience methods for the custom struct `BitmapInfoHeader`. */
   object BitmapInfoHeader:
     private val offset1  = sizeof[DWord]
     private val offset2  = offset1 + sizeof[Long32]
@@ -56,9 +68,17 @@ object Bmp:
     private val offset9  = offset8 + sizeof[Long32]
     private val offset10 = offset9 + sizeof[DWord]
 
-    val size  = offset10 + sizeof[DWord]
+    /** Total size of a `BitmapInfoHeader`. */
+    val size = offset10 + sizeof[DWord]
+
+    /** Allocates memory on the heap for 1 info header struct. Has to be freed manually.
+      *
+      * @return
+      *   Pointer to the info header struct allocated (or `null` if failed).
+      */
     def alloc = malloc(size).asInstanceOf[BitmapInfoHeader]
 
+    /** Field getters for `BitmapInfoHeader` (using pointer arithmetic and casts). */
     extension (bmpIh: BitmapInfoHeader)
       def biSize          = bmpIh.asInstanceOf[Ptr[DWord]]
       def biWidth         = (bmpIh + offset1).asInstanceOf[Ptr[Long32]]
@@ -77,7 +97,13 @@ object Bmp:
     * Adapted from http://msdn.microsoft.com/en-us/library/aa922590.aspx.
     */
   type RgbTriple = CStruct3[Byte8, Byte8, Byte8] // blue, green, red
+
   extension (rgb: RgbTriple)
+    /** Convenient setter method to update an RGB triple.
+      *
+      * @param that
+      *   Another RGB triple whose fields we want to copy into this.
+      */
     def set(that: RgbTriple): Unit =
       rgb._1 = that._1
       rgb._2 = that._2

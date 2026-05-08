@@ -171,17 +171,7 @@ case class Bitmap(height: Int, width: Int, pixels: Pixels):
     while row < height + 1 do
       var col = 1
       while col < width + 1 do
-        val neighbors = Seq(
-          imgCopy.at(row - 1)(col - 1),
-          imgCopy.at(row - 1)(col),
-          imgCopy.at(row - 1)(col + 1),
-          imgCopy.at(row)(col - 1),
-          imgCopy.at(row)(col),
-          imgCopy.at(row)(col + 1),
-          imgCopy.at(row + 1)(col - 1),
-          imgCopy.at(row + 1)(col),
-          imgCopy.at(row + 1)(col + 1)
-        )
+        val neighbors = FilterHelpers.neighbors(row)(col).map((r, c) => imgCopy.at(r)(c))
         updateTriples(row)(col)(neighbors)(FilterHelpers.sobel)
         col += 1
       row += 1
