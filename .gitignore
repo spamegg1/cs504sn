@@ -50,4 +50,6 @@ proof.png
 *.bak
 Makefile
 *.bmp
+*.raw
 ps4/filter/filter
+ps4/recover/recover

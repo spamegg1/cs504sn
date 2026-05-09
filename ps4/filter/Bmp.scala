@@ -16,6 +16,26 @@ object Bmp:
   type DWord  = uint32_t
   type Long32 = int32_t
 
+  /** This structure describes a color consisting of relative intensities of red, green, and blue.
+    *
+    * Adapted from http://msdn.microsoft.com/en-us/library/aa922590.aspx.
+    */
+  type RgbTriple = CStruct3[Byte8, Byte8, Byte8] // blue, green, red
+
+  extension (rgb: RgbTriple)
+    /** Convenient setter method to update an RGB triple.
+      *
+      * @param that
+      *   Another RGB triple whose fields we want to copy into this.
+      */
+    def set(that: RgbTriple): Unit =
+      rgb._1 = that._1
+      rgb._2 = that._2
+      rgb._3 = that._3
+
+  /** Convenient shorthand for a rectangle of RGB values. */
+  type Pixels = Ptr[RgbTriple]
+
   /** The BITMAPFILEHEADER structure contains information about the type, size, and layout of a file that contains a DIB
     * [device-independent bitmap].
     *
@@ -47,6 +67,7 @@ object Bmp:
       def bfReserved1 = (bmpFh + offset2).asInstanceOf[Ptr[Word]]
       def bfReserved2 = (bmpFh + offset3).asInstanceOf[Ptr[Word]]
       def bfOffBits   = (bmpFh + offset4).asInstanceOf[Ptr[DWord]]
+  end BitmapFileHeader
 
   /** The BITMAPINFOHEADER structure contains information about the dimensions and color format of a DIB
     * [device-independent bitmap].
@@ -91,23 +112,4 @@ object Bmp:
       def biYPelsPerMeter = (bmpIh + offset8).asInstanceOf[Ptr[Long32]]
       def biClrUsed       = (bmpIh + offset9).asInstanceOf[Ptr[DWord]]
       def biClrImportant  = (bmpIh + offset10).asInstanceOf[Ptr[DWord]]
-
-  /** This structure describes a color consisting of relative intensities of red, green, and blue.
-    *
-    * Adapted from http://msdn.microsoft.com/en-us/library/aa922590.aspx.
-    */
-  type RgbTriple = CStruct3[Byte8, Byte8, Byte8] // blue, green, red
-
-  extension (rgb: RgbTriple)
-    /** Convenient setter method to update an RGB triple.
-      *
-      * @param that
-      *   Another RGB triple whose fields we want to copy into this.
-      */
-    def set(that: RgbTriple): Unit =
-      rgb._1 = that._1
-      rgb._2 = that._2
-      rgb._3 = that._3
-
-  /** Convenient shorthand for a rectangle of RGB values. */
-  type Pixels = Ptr[RgbTriple]
+  end BitmapInfoHeader
