@@ -5,5 +5,5 @@ import scalanative.libc.math.round
 import munit.FunSuite
 
 class SpellerTest extends FunSuite:
-  test("asd"):
+  test("speller is correct on dictionaries/large and texts/federalist.txt"):
     assert(true)
